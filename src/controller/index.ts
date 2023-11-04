@@ -1,5 +1,5 @@
 import express from 'express';
-import { Op } from 'sequelize'; // Import Sequelize and its Op object.
+import { Op, Sequelize } from 'sequelize'; // Import Sequelize and its Op object.
 import Restaurant from "../model/schema"
 
 
@@ -68,9 +68,11 @@ export const lowCostVegFrenchRestaurants = async (req: express.Request, res: exp
   try {
     const filteredRestaurants = await Restaurant.findAll({
       where: {
-        vegOnly: true,
-        cost: 'Low',
-        cuisineTypes: { [Op.contains]: ['french'] },
+        [Op.and]: [
+          { vegOnly: true },
+          { cost: 'Low' },
+          Sequelize.literal(`JSON_CONTAINS(cusine_types, '["french"]')`), // Adjust the JSON array as needed
+        ],
       },
     });
     res.status(200).json(filteredRestaurants);
@@ -88,32 +90,18 @@ export const costCuisineRestaurants = async (req: express.Request, res: express.
   try {
     const filteredRestaurants = await Restaurant.findAll({
       where: {
-        cost: { [Op.in]: ['High', 'Low'] },
-        cuisineTypes: {
-          [Op.contains]: { [Op.or]: ['french', 'italian'] },
-        },
-      },
-    });
-    res.status(200).json(filteredRestaurants);
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-};
-
-
-/**
- * this function is use to  Get restaurants with high or low cost and French or Italian cuisine (alternative using OR)
- * @returns
- */
-export const FrenchOrItalianRestaurants = async (req: express.Request, res: express.Response) => {
-  try {
-    const filteredRestaurants = await Restaurant.findAll({
-      where: {
         [Op.or]: [
           { cost: 'High' },
           { cost: 'Low' },
+          Sequelize.where(
+            Sequelize.fn('JSON_CONTAINS', Sequelize.col('cusine_types'), JSON.stringify(['french'])),
+            true
+          ),
+          Sequelize.where(
+            Sequelize.fn('JSON_CONTAINS', Sequelize.col('cusine_types'), JSON.stringify(['italian'])),
+            true
+          ),
         ],
-        cuisineTypes: { [Op.contains]: { [Op.or]: ['french', 'italian'] } },
       },
     });
     res.status(200).json(filteredRestaurants);

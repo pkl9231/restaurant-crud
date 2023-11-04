@@ -7,7 +7,6 @@ import {
   lowCostVegetarianRestaurants,
   lowCostVegFrenchRestaurants,
   costCuisineRestaurants,
-  FrenchOrItalianRestaurants
 } from "../controller";
 
 export default (router: express.Router) => {
@@ -18,7 +17,6 @@ export default (router: express.Router) => {
     router.get('/restaurants/veg/low-cost', lowCostVegetarianRestaurants);
     router.get('/restaurants/veg/french/low-cost', lowCostVegFrenchRestaurants);
     router.get('/restaurants/cost-cuisine', costCuisineRestaurants);
-    router.get('/restaurants/cost-cuisine-alternative', FrenchOrItalianRestaurants)
   } catch (error) {
     console.log(error);
   }
